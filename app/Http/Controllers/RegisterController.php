@@ -2,9 +2,34 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\User;
+use Illuminate\Validation\Rule;
 
 class RegisterController extends Controller
 {
-    //
+    public function create()
+    {
+        return view('auth.register');
+    }
+
+    public function store()
+    {
+        // return request()->all();
+
+        // create the user
+        $attributes = request()->validate([
+            'name' => ['required', 'max:255'],
+            'username' => ['required', 'min:3', 'max:255', Rule::unique('users', 'username')],
+            'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
+            'password' => ['required', 'min:7', 'max:255'],
+        ]);
+
+        $user = User::create($attributes);
+
+        // log the user in
+        auth()->login($user);
+
+        // dd('success validation succeded');
+        return redirect('/movies')->with('success', 'Your account has been created');
+    }
 }
